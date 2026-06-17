@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhòngTrọPro</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{--green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;--green-text:#085041;--red:#E24B4A;--red-light:#FCEBEB;--red-text:#791F1F;--amber:#BA7517;--amber-light:#FAEEDA;--bg:#F7F8FA;--surface:#FFFFFF;--surface2:#F2F4F7;--border:#E4E7EC;--border2:#C8CDD8;--text:#101828;--text2:#475467;--text3:#98A2B3;--radius:10px;--radius-lg:14px;--shadow:0 1px 3px rgba(16,24,40,.08);--shadow-md:0 4px 12px rgba(16,24,40,.12)}
+@media(prefers-color-scheme:dark){:root{--bg:#0F1117;--surface:#1A1D27;--surface2:#23263A;--border:#2D3250;--border2:#404775;--text:#F2F4F8;--text2:#9BA3C2;--text3:#555E85;--green-light:#0A2E20;--green-text:#5DCAA5;--red-light:#2E1010;--red-text:#F09595;--amber-light:#2A1E06;--shadow:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 12px rgba(0,0,0,.4)}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+a{color:var(--green);text-decoration:none}
+
+/* Sync banner */
+.sync-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 16px;font-size:12px;font-weight:500;transition:all .3s}
+.sync-bar.connecting{background:#FAEEDA;color:#854F0B}
+.sync-bar.online{background:var(--green-light);color:var(--green-text)}
+.sync-bar.offline{background:var(--red-light);color:var(--red-text)}
+.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sync-bar.connecting .sync-dot{background:#BA7517;animation:pulse 1s infinite}
+.sync-bar.online .sync-dot{background:var(--green)}
+.sync-bar.offline .sync-dot{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50;gap:12px}
+.logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:700;letter-spacing:-.3px}
+.logo-dot{width:28px;height:28px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-dot i{color:#fff;font-size:16px}
+.logo em{color:var(--green);font-style:normal}
+.topbar-right{display:flex;align-items:center;gap:8px}
+
+.stats-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon.t{background:var(--surface);border:1px solid var(--border)}
+.stat-icon.a{background:var(--green-light)}
+.stat-icon.r{background:var(--red-light)}
+.stat-icon.v{background:var(--amber-light)}
+.stat-icon i{font-size:18px}
+.stat-icon.t i{color:var(--text2)}
+.stat-icon.a i{color:var(--green)}
+.stat-icon.r i{color:var(--red)}
+.stat-icon.v i{color:var(--amber)}
+.stat-num{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:500}
+
+.filters-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:sticky;top:56px;z-index:40}
+.search-box{position:relative;flex:1;min-width:180px}
+.search-box i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none}
+.search-box input{width:100%;padding:7px 10px 7px 34px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.search-box input:focus{border-color:var(--green);background:var(--surface)}
+select{padding:7px 28px 7px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-size:13px;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%2398A2B3' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:120px}
+select:focus{border-color:var(--green);outline:none}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;font-weight:500;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.btn:hover{background:var(--surface2);border-color:var(--border2)}
+.btn:active{transform:scale(.98)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover{background:var(--green-dark);border-color:var(--green-dark)}
+.btn-sm{padding:5px 10px;font-size:12px;gap:4px}
+.btn-icon{padding:6px;width:30px;height:30px;justify-content:center;border-radius:8px}
+.btn-del{color:var(--red);border-color:transparent;background:transparent}
+.btn-del:hover{background:var(--red-light);border-color:var(--red)}
+.btn-ghost{border-color:transparent;background:transparent;color:var(--text2)}
+.btn-ghost:hover{background:var(--surface2)}
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.view-toggle button{border:none;background:transparent;padding:6px 10px;cursor:pointer;color:var(--text3);font-size:15px;display:flex;align-items:center;transition:all .12s}
+.view-toggle button.on{background:var(--surface2);color:var(--text)}
+
+.content{padding:16px 20px;flex:1}
+.results-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:12px;color:var(--text3)}
+
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.room-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:box-shadow .15s,border-color .15s}
+.room-card:hover{box-shadow:var(--shadow-md);border-color:var(--border2)}
+.room-thumb{height:130px;background:var(--surface2);position:relative;overflow:hidden}
+.room-thumb img{width:100%;height:100%;object-fit:cover}
+.room-thumb-ph{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text3)}
+.room-thumb-ph i{font-size:28px}
+.room-thumb-ph span{font-size:11px}
+.img-count{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;padding:2px 6px;border-radius:100px;display:flex;align-items:center;gap:3px}
+.sdot{position:absolute;top:8px;left:8px;padding:3px 8px;border-radius:100px;font-size:10px;font-weight:600}
+.sdot.available{background:rgba(29,158,117,.9);color:#fff}
+.sdot.rented{background:rgba(226,75,74,.85);color:#fff}
+.room-body{padding:12px}
+.room-name{font-size:14px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.room-price{font-size:17px;font-weight:700;color:var(--green);letter-spacing:-.3px}
+.room-price small{font-size:11px;color:var(--text3);font-weight:400}
+.room-meta{display:flex;align-items:center;gap:10px;margin-top:5px;font-size:11px;color:var(--text2)}
+.room-meta span{display:flex;align-items:center;gap:3px}
+.room-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.tag{font-size:10px;padding:2px 7px;border-radius:100px;background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.room-card-actions{display:flex;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+
+.rooms-list{display:flex;flex-direction:column;gap:6px}
+.room-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .12s}
+.room-row:hover{border-color:var(--border2)}
+.row-thumb{width:60px;height:44px;border-radius:7px;background:var(--surface2);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.row-thumb img{width:100%;height:100%;object-fit:cover}
+.row-info{flex:1;min-width:0}
+.row-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.row-sub{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-price{font-size:14px;font-weight:700;color:var(--green);white-space:nowrap}
+.row-actions{display:flex;gap:4px;flex-shrink:0}
+.badge{font-size:10px;padding:2px 7px;border-radius:100px;font-weight:600;flex-shrink:0;white-space:nowrap}
+.badge.available{background:var(--green-light);color:var(--green-text)}
+.badge.rented{background:var(--red-light);color:var(--red-text)}
+
+.empty{text-align:center;padding:64px 20px;color:var(--text3)}
+.empty i{font-size:48px;display:block;margin-bottom:12px;color:var(--border2)}
+.empty h3{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:6px}
+
+.pagination{display:flex;align-items:center;justify-content:center;gap:4px;padding:14px 20px;border-top:1px solid var(--border);background:var(--surface)}
+.page-btn{min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;cursor:pointer;transition:all .12s;font-family:inherit}
+.page-btn:hover:not(:disabled):not(.on){background:var(--surface2)}
+.page-btn.on{background:var(--green);color:#fff;border-color:var(--green)}
+.page-btn:disabled{opacity:.35;cursor:default}
+.page-info{font-size:12px;color:var(--text3);margin:0 6px}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px;backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);width:100%;max-width:540px;margin:auto;box-shadow:var(--shadow-md);position:relative}
+.modal-head{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:16px;font-weight:700}
+.modal-body{padding:16px 20px 20px}
+.modal-close{background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:20px;padding:4px;border-radius:6px;display:flex}
+.modal-close:hover{background:var(--surface2);color:var(--text)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row.full{grid-template-columns:1fr}
+.form-group label{display:block;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .12s}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--green);background:var(--surface)}
+.form-group textarea{resize:vertical;min-height:64px;line-height:1.5}
+.amen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:2px}
+.amen-item{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;user-select:none}
+.amen-item:hover{background:var(--surface2)}
+.amen-item input[type=checkbox]{accent-color:var(--green);width:13px;height:13px;cursor:pointer;flex-shrink:0}
+.img-drop{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:18px;text-align:center;cursor:pointer;transition:all .15s;color:var(--text2);font-size:12px}
+.img-drop:hover{border-color:var(--green);background:var(--green-light);color:var(--green-text)}
+.img-drop i{font-size:24px;display:block;margin-bottom:6px;color:var(--text3)}
+.img-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.img-prev{position:relative;width:76px;height:56px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.img-prev img{width:100%;height:100%;object-fit:cover}
+.img-prev button{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.65);border:none;color:#fff;border-radius:50%;width:17px;height:17px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center}
+.form-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:14px;margin-top:4px;border-top:1px solid var(--border)}
+
+/* Detail */
+.det-slider{position:relative;overflow:hidden;border-radius:var(--radius) var(--radius) 0 0;background:var(--surface2);height:200px}
+.det-slider img{width:100%;height:200px;object-fit:cover}
+.slider-nav{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px}
+.sdot2{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5);cursor:pointer;transition:all .15s}
+.sdot2.on{background:#fff;width:16px;border-radius:3px}
+.sarrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+.sarrow.prev{left:8px}
+.sarrow.next{right:8px}
+.det-nophoto{height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3);border-radius:var(--radius) var(--radius) 0 0;background:var(--surface2)}
+.det-body{padding:16px 20px 20px}
+.det-price{font-size:24px;font-weight:800;color:var(--green);letter-spacing:-.5px}
+.det-price small{font-size:13px;font-weight:400;color:var(--text2)}
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.det-item .dk{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:2px}
+.det-item .dv{font-size:13px;font-weight:600}
+.det-sect{margin-bottom:12px}
+.det-sect-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;display:flex;align-items:center;gap:8px;max-width:300px;box-shadow:var(--shadow-md)}
+.toast.in{opacity:1;transform:translateY(0)}
+.toast.success{background:var(--green);color:#fff}
+.toast.error{background:var(--red);color:#fff}
+.toast.info{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:680px){
+  .topbar{padding:0 12px;height:52px}
+  .stats-wrap{padding:10px 12px}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:7px}
+  .stat{padding:10px;gap:8px}
+  .stat-num{font-size:17px}
+  .stat-icon{width:30px;height:30px}
+  .filters-wrap{padding:10px 12px;top:52px;gap:6px}
+  .content{padding:12px}
+  .form-row{grid-template-columns:1fr}
+  .amen-grid{grid-template-columns:repeat(2,1fr)}
+  .rooms-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .row-sub{display:none}
+  .logo span:last-child{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--text2)">Đang kết nối Firebase...</div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <div class="sync-bar connecting" id="sync-bar">
+    <div class="sync-dot"></div>
+    <span id="sync-msg">Đang kết nối...</span>
+  </div>
+
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-dot"><i class="ti ti-building"></i></div>
+      <span>Phòng<em>Trọ</em>Pro</span>
+    </div>
+    <div class="topbar-right">
+      <div class="view-toggle">
+        <button id="btn-grid" class="on" onclick="setView('grid')" title="Lưới"><i class="ti ti-layout-grid"></i></button>
+        <button id="btn-list" onclick="setView('list')" title="Danh sách"><i class="ti ti-list"></i></button>
+      </div>
+      <button class="btn btn-green" onclick="openForm()"><i class="ti ti-plus"></i><span>Thêm phòng</span></button>
+    </div>
+  </header>
+
+  <div class="stats-wrap"><div class="stats-grid" id="stats"></div></div>
+
+  <div class="filters-wrap">
+    <div class="search-box">
+      <i class="ti ti-search"></i>
+      <input type="text" id="q" placeholder="Tìm tên phòng, khu vực, địa chỉ..." oninput="doFilter()">
+    </div>
+    <select id="f-area" onchange="doFilter()"><option value="">Tất cả khu vực</option></select>
+    <select id="f-status" onchange="doFilter()">
+      <option value="">Tất cả</option>
+      <option value="available">Còn trống</option>
+      <option value="rented">Đã thuê</option>
+    </select>
+    <select id="f-amen" onchange="doFilter()"><option value="">Tiện ích</option></select>
+    <select id="f-sort" onchange="doFilter()">
+      <option value="">Sắp xếp</option>
+      <option value="price-asc">Giá ↑</option>
+      <option value="price-desc">Giá ↓</option>
+      <option value="area">Khu vực</option>
+      <option value="name">Tên A–Z</option>
+    </select>
+    <button class="btn btn-sm btn-ghost" onclick="clearFilters()"><i class="ti ti-filter-off"></i> Xóa lọc</button>
+  </div>
+
+  <main class="content">
+    <div class="results-bar"><span id="result-count"></span><span id="last-update" style="font-size:11px;color:var(--text3)"></span></div>
+    <div id="rooms-wrap"></div>
+  </main>
+
+  <div class="pagination" id="pager"></div>
+</div>
+
+<!-- Form Modal -->
+<div class="overlay" id="form-overlay">
+<div class="modal">
+  <div class="modal-head">
+    <h2 id="form-title">Thêm phòng mới</h2>
+    <button class="modal-close" onclick="closeForm()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="form-row">
+      <div class="form-group"><label>Tên phòng *</label><input id="fn" placeholder="VD: Phòng 101, Studio A..."></div>
+      <div class="form-group"><label>Khu vực *</label><input id="fa" placeholder="VD: Quận 1, Bình Thạnh..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Giá thuê (VNĐ/tháng) *</label><input id="fp" type="number" placeholder="3500000" min="0"></div>
+      <div class="form-group"><label>Diện tích (m²)</label><input id="fs" type="number" placeholder="20" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Trạng thái</label>
+        <select id="fst"><option value="available">Còn trống</option><option value="rented">Đã thuê</option></select>
+      </div>
+      <div class="form-group"><label>Số điện thoại</label><input id="fph" placeholder="0901 234 567" type="tel"></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label>Địa chỉ chi tiết</label><input id="fad" placeholder="Số nhà, tên đường, phường/xã..."></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Tiện ích có sẵn</label>
+        <div class="amen-grid" id="amen-grid"></div>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label>Ghi chú</label><textarea id="fno" placeholder="Thông tin thêm về phòng..."></textarea></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Hình ảnh phòng</label>
+        <div class="img-drop" id="img-drop-zone" onclick="document.getElementById('img-inp').click()">
+          <i class="ti ti-photo-up"></i>
+          Nhấn để chọn ảnh hoặc kéo thả vào đây
+          <div style="font-size:11px;margin-top:4px;color:var(--text3)">JPG, PNG — nhiều ảnh cùng lúc</div>
+        </div>
+        <input type="file" id="img-inp" accept="image/*" multiple style="display:none" onchange="handleImgs(event)">
+        <div class="img-row" id="img-row"></div>
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn" onclick="closeForm()">Hủy</button>
+      <button class="btn btn-green" id="save-btn" onclick="saveRoom()"><i class="ti ti-device-floppy"></i> Lưu phòng</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Detail Modal -->
+<div class="overlay" id="det-overlay">
+<div class="modal" style="max-width:540px">
+  <button class="modal-close" style="position:absolute;top:12px;right:12px;z-index:2;background:rgba(0,0,0,.4);color:#fff;border-radius:50%;width:30px;height:30px" onclick="closeDet()"><i class="ti ti-x"></i></button>
+  <div id="det-content"></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, push, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB6VrhAupH-KWcOb0k8KuY7g4KJt5VJ7k4",
+  authDomain: "phongtro-3563f.firebaseapp.com",
+  databaseURL: "https://phongtro-3563f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "phongtro-3563f",
+  storageBucket: "phongtro-3563f.firebasestorage.app",
+  messagingSenderId: "807691744951",
+  appId: "1:807691744951:web:cfe7b8bbc662956331bf32"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+const roomsRef = ref(db, 'rooms');
+
+const AMENITIES = ['WiFi','Điều hòa','Nóng lạnh','Máy giặt','Tủ lạnh','Bếp riêng','Bãi xe','Ban công','Thang máy','An ninh 24/7','Sân phơi','Gác lửng','Nội thất cơ bản','Cửa sổ thoáng'];
+const PER = 12;
+let rooms = [], editId = null, tmpImgs = [], view = 'grid', page = 1;
+let sliderIdx = 0, sliderImgs = [];
+let toastTimer;
+
+/* ── Firebase real-time listener ── */
+onValue(roomsRef, (snapshot) => {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  setSyncOnline();
+  const data = snapshot.val();
+  if (data) {
+    rooms = Object.entries(data).map(([id, v]) => ({ ...v, id }));
+    rooms.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  } else {
+    rooms = [];
+  }
+  render();
+  document.getElementById('last-update').textContent = 'Cập nhật ' + new Date().toLocaleTimeString('vi-VN');
+}, (error) => {
+  setSyncOffline();
+  toast('Lỗi kết nối Firebase: ' + error.message, 'error');
+});
+
+function setSyncOnline() {
+  const b = document.getElementById('sync-bar');
+  b.className = 'sync-bar online';
+  document.getElementById('sync-msg').textContent = 'Đồng bộ real-time · Mọi thiết bị đều cập nhật';
+}
+function setSyncOffline() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const b = document.getElementById('sync-bar');
+  b.className = 'sync-bar offline';
+  document.getElementById('sync-msg').textContent = 'Mất kết nối — Kiểm tra internet';
+}
+
+/* ── Filter ── */
+function filtered() {
+  let ls = [...rooms];
+  const q = (document.getElementById('q').value || '').toLowerCase();
+  const fa = document.getElementById('f-area').value;
+  const fs = document.getElementById('f-status').value;
+  const fm = document.getElementById('f-amen').value;
+  const so = document.getElementById('f-sort').value;
+  if (q) ls = ls.filter(r => [r.name, r.area, r.address || ''].join(' ').toLowerCase().includes(q));
+  if (fa) ls = ls.filter(r => r.area === fa);
+  if (fs) ls = ls.filter(r => r.status === fs);
+  if (fm) ls = ls.filter(r => (r.amenities || []).includes(fm));
+  if (so === 'price-asc') ls.sort((a, b) => a.price - b.price);
+  else if (so === 'price-desc') ls.sort((a, b) => b.price - a.price);
+  else if (so === 'area') ls.sort((a, b) => a.area.localeCompare(b.area, 'vi'));
+  else if (so === 'name') ls.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+  return ls;
+}
+
+window.doFilter = function() { page = 1; render(); };
+window.clearFilters = function() {
+  ['q'].forEach(id => document.getElementById(id).value = '');
+  ['f-area','f-status','f-amen','f-sort'].forEach(id => document.getElementById(id).value = '');
+  doFilter();
+};
+
+/* ── Render ── */
+function render() {
+  renderStats();
+  syncSelects();
+  const list = filtered();
+  const total = list.length;
+  const pages = Math.max(1, Math.ceil(total / PER));
+  if (page > pages) page = pages;
+  const slice = list.slice((page - 1) * PER, page * PER);
+  document.getElementById('result-count').textContent = total + ' phòng';
+  const wrap = document.getElementById('rooms-wrap');
+  if (!slice.length) {
+    wrap.innerHTML = `<div class="empty"><i class="ti ti-home-off"></i><h3>Không tìm thấy phòng nào</h3><p>Thử thay đổi bộ lọc hoặc thêm phòng mới.</p></div>`;
+    document.getElementById('pager').innerHTML = ''; return;
+  }
+  wrap.className = view === 'grid' ? 'rooms-grid' : 'rooms-list';
+  wrap.innerHTML = slice.map(view === 'grid' ? gridCard : listRow).join('');
+  renderPager(pages, total);
+}
+
+function fmt(p) { return (p / 1000000).toFixed(1) + 'M'; }
+
+function gridCard(r) {
+  const thumb = r.images && r.images.length
+    ? `<div class="room-thumb"><img src="${r.images[0]}" loading="lazy" alt="${esc(r.name)}">${r.images.length > 1 ? `<div class="img-count"><i class="ti ti-photo" style="font-size:10px"></i>${r.images.length}</div>` : ''}<span class="sdot ${r.status}">${r.status === 'available' ? 'Còn trống' : 'Đã thuê'}</span></div>`
+    : `<div class="room-thumb"><div class="room-thumb-ph"><i class="ti ti-camera-off"></i><span>Chưa có ảnh</span></div><span class="sdot ${r.status}">${r.status === 'available' ? 'Còn trống' : 'Đã thuê'}</span></div>`;
+  const amen = r.amenities || [];
+  return `<div class="room-card" onclick="openDet('${r.id}')">
+    ${thumb}
+    <div class="room-body">
+      <div class="room-name">${esc(r.name)}</div>
+      <div class="room-price">${fmt(r.price)}<small>/tháng</small></div>
+      <div class="room-meta"><span><i class="ti ti-map-pin" style="font-size:12px"></i>${esc(r.area)}</span>${r.size ? `<span><i class="ti ti-ruler-2" style="font-size:12px"></i>${r.size}m²</span>` : ''}</div>
+      <div class="room-tags">${amen.slice(0, 3).map(a => `<span class="tag">${esc(a)}</span>`).join('')}${amen.length > 3 ? `<span class="tag">+${amen.length - 3}</span>` : ''}</div>
+      <div class="room-card-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-sm" onclick="openForm('${r.id}')"><i class="ti ti-edit"></i> Sửa</button>
+        <button class="btn btn-sm btn-del btn-icon" onclick="delRoom('${r.id}')"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function listRow(r) {
+  const thumb = r.images && r.images.length
+    ? `<div class="row-thumb"><img src="${r.images[0]}" loading="lazy" alt="${esc(r.name)}"></div>`
+    : `<div class="row-thumb"><i class="ti ti-home" style="font-size:18px"></i></div>`;
+  return `<div class="room-row" onclick="openDet('${r.id}')">
+    ${thumb}
+    <div class="row-info">
+      <div class="row-name">${esc(r.name)} <span class="badge ${r.status}">${r.status === 'available' ? 'Trống' : 'Thuê'}</span></div>
+      <div class="row-sub">${esc(r.area)}${r.size ? ' · ' + r.size + 'm²' : ''} · ${(r.amenities || []).join(', ') || 'Chưa có tiện ích'}</div>
+    </div>
+    <div class="row-price">${fmt(r.price)}</div>
+    <div class="row-actions" onclick="event.stopPropagation()">
+      <button class="btn btn-sm btn-icon" onclick="openForm('${r.id}')"><i class="ti ti-edit"></i></button>
+      <button class="btn btn-sm btn-icon btn-del" onclick="delRoom('${r.id}')"><i class="ti ti-trash"></i></button>
+    </div>
+  </div>`;
+}
+
+function renderStats() {
+  const total = rooms.length, avail = rooms.filter(r => r.status === 'available').length;
+  const rented = rooms.filter(r => r.status === 'rented').length;
+  const rev = rooms.filter(r => r.status === 'rented').reduce((s, r) => s + r.price, 0);
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-icon t"><i class="ti ti-building"></i></div><div><div class="stat-num">${total}</div><div class="stat-label">Tổng phòng</div></div></div>
+    <div class="stat"><div class="stat-icon a"><i class="ti ti-door-enter"></i></div><div><div class="stat-num" style="color:var(--green)">${avail}</div><div class="stat-label">Còn trống</div></div></div>
+    <div class="stat"><div class="stat-icon r"><i class="ti ti-user-check"></i></div><div><div class="stat-num" style="color:var(--red)">${rented}</div><div class="stat-label">Đã thuê</div></div></div>
+    <div class="stat"><div class="stat-icon v"><i class="ti ti-cash"></i></div><div><div class="stat-num" style="color:var(--amber);font-size:16px">${(rev / 1000000).toFixed(1)}M</div><div class="stat-label">Doanh thu/tháng</div></div></div>`;
+}
+
+function syncSelects() {
+  const areas = [...new Set(rooms.map(r => r.area))].sort((a, b) => a.localeCompare(b, 'vi'));
+  const ae = document.getElementById('f-area'), cv = ae.value;
+  ae.innerHTML = '<option value="">Tất cả khu vực</option>' + areas.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+  ae.value = cv;
+  const allA = new Set(); rooms.forEach(r => (r.amenities || []).forEach(a => allA.add(a)));
+  const me = document.getElementById('f-amen'), mv = me.value;
+  me.innerHTML = '<option value="">Tiện ích</option>' + [...allA].sort().map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+  me.value = mv;
+}
+
+function renderPager(pages, total) {
+  const p = document.getElementById('pager');
+  if (pages <= 1) { p.innerHTML = `<span class="page-info">${total} phòng</span>`; return; }
+  let h = `<span class="page-info">${total} phòng</span><button class="page-btn" onclick="goP(${page - 1})" ${page === 1 ? 'disabled' : ''}><i class="ti ti-chevron-left"></i></button>`;
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - page) <= 1) h += `<button class="page-btn ${i === page ? 'on' : ''}" onclick="goP(${i})">${i}</button>`;
+    else if ((i === 2 && page > 3) || (i === pages - 1 && page < pages - 2)) h += '<span class="page-info">…</span>';
+  }
+  h += `<button class="page-btn" onclick="goP(${page + 1})" ${page === pages ? 'disabled' : ''}><i class="ti ti-chevron-right"></i></button>`;
+  p.innerHTML = h;
+}
+
+window.goP = function(n) { page = n; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+window.setView = function(v) {
+  view = v;
+  document.getElementById('btn-grid').className = v === 'grid' ? 'on' : '';
+  document.getElementById('btn-list').className = v === 'list' ? 'on' : '';
+  render();
+};
+
+/* ── Form ── */
+window.openForm = function(id) {
+  editId = id || null; tmpImgs = [];
+  document.getElementById('form-title').textContent = id ? 'Chỉnh sửa phòng' : 'Thêm phòng mới';
+  const r = id ? rooms.find(x => x.id === id) : {};
+  document.getElementById('fn').value = r.name || '';
+  document.getElementById('fa').value = r.area || '';
+  document.getElementById('fp').value = r.price || '';
+  document.getElementById('fs').value = r.size || '';
+  document.getElementById('fst').value = r.status || 'available';
+  document.getElementById('fph').value = r.phone || '';
+  document.getElementById('fad').value = r.address || '';
+  document.getElementById('fno').value = r.note || '';
+  document.getElementById('amen-grid').innerHTML = AMENITIES.map(a =>
+    `<label class="amen-item"><input type="checkbox" value="${a}" ${(r.amenities || []).includes(a) ? 'checked' : ''}>${a}</label>`
+  ).join('');
+  tmpImgs = r.images ? [...r.images] : [];
+  renderImgRow();
+  document.getElementById('form-overlay').classList.add('open');
+};
+window.closeForm = function() { document.getElementById('form-overlay').classList.remove('open'); };
+
+window.handleImgs = function(e) {
+  [...e.target.files].forEach(f => {
+    const rd = new FileReader();
+    rd.onload = ev => { tmpImgs.push(ev.target.result); renderImgRow(); };
+    rd.readAsDataURL(f);
+  });
+  e.target.value = '';
+};
+window.delImg = function(i) { tmpImgs.splice(i, 1); renderImgRow(); };
+function renderImgRow() {
+  document.getElementById('img-row').innerHTML = tmpImgs.map((s, i) =>
+    `<div class="img-prev"><img src="${s}"><button onclick="delImg(${i})">×</button></div>`
+  ).join('');
+}
+
+window.saveRoom = async function() {
+  const name = document.getElementById('fn').value.trim();
+  const area = document.getElementById('fa').value.trim();
+  const price = parseInt(document.getElementById('fp').value) || 0;
+  if (!name || !area || !price) { toast('Vui lòng điền tên phòng, khu vực và giá thuê!', 'error'); return; }
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite"></i> Đang lưu...';
+  const amenities = [...document.querySelectorAll('#amen-grid input:checked')].map(x => x.value);
+  const room = {
+    name, area, price,
+    size: parseInt(document.getElementById('fs').value) || 0,
+    status: document.getElementById('fst').value,
+    phone: document.getElementById('fph').value.trim(),
+    address: document.getElementById('fad').value.trim(),
+    note: document.getElementById('fno').value.trim(),
+    amenities, images: [...tmpImgs],
+    updatedAt: Date.now()
+  };
+  try {
+    if (editId) {
+      await update(ref(db, 'rooms/' + editId), room);
+    } else {
+      room.createdAt = Date.now();
+      await push(roomsRef, room);
+    }
+    closeForm();
+    toast(editId ? 'Đã cập nhật phòng!' : 'Đã thêm phòng mới!', 'success');
+  } catch (err) {
+    toast('Lỗi lưu dữ liệu: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i> Lưu phòng';
+  }
+};
+
+window.delRoom = async function(id) {
+  if (!confirm('Xóa phòng này? Không thể hoàn tác.')) return;
+  try {
+    await remove(ref(db, 'rooms/' + id));
+    toast('Đã xóa phòng.', 'success');
+  } catch (err) {
+    toast('Lỗi xóa: ' + err.message, 'error');
+  }
+};
+
+/* ── Detail ── */
+window.openDet = function(id) {
+  const r = rooms.find(x => x.id === id); if (!r) return;
+  sliderImgs = r.images || []; sliderIdx = 0;
+  let imgHtml;
+  if (sliderImgs.length) {
+    imgHtml = `<div class="det-slider" id="dslider">
+      <img id="dslide-img" src="${sliderImgs[0]}" alt="${esc(r.name)}">
+      ${sliderImgs.length > 1 ? `<button class="sarrow prev" onclick="slide(-1)"><i class="ti ti-chevron-left"></i></button><button class="sarrow next" onclick="slide(1)"><i class="ti ti-chevron-right"></i></button><div class="slider-nav" id="slide-dots">${sliderImgs.map((_, i) => `<div class="sdot2 ${i === 0 ? 'on' : ''}" onclick="goSlide(${i})"></div>`).join('')}</div>` : ''}
+    </div>`;
+  } else {
+    imgHtml = `<div class="det-nophoto"><i class="ti ti-camera-off" style="font-size:36px"></i><span style="font-size:12px">Chưa có hình ảnh</span></div>`;
+  }
+  document.getElementById('det-content').innerHTML = `
+    ${imgHtml}
+    <div class="det-body">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+        <div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:3px">${esc(r.name)}</div>
+          <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px"><i class="ti ti-map-pin" style="font-size:13px"></i>${esc(r.area)}${r.address ? ' — ' + esc(r.address) : ''}</div>
+        </div>
+        <span class="badge ${r.status}" style="font-size:11px;padding:4px 10px">${r.status === 'available' ? 'Còn trống' : 'Đã thuê'}</span>
+      </div>
+      <div class="det-price">${fmt(r.price)}<small>/tháng</small></div>
+      <div class="det-grid">
+        ${r.size ? `<div class="det-item"><div class="dk">Diện tích</div><div class="dv">${r.size} m²</div></div>` : ''}
+        ${r.phone ? `<div class="det-item"><div class="dk">Liên hệ</div><div class="dv"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></div></div>` : ''}
+      </div>
+      ${r.amenities && r.amenities.length ? `<div class="det-sect"><div class="det-sect-title">Tiện ích</div><div class="room-tags">${r.amenities.map(a => `<span class="tag">${esc(a)}</span>`).join('')}</div></div>` : ''}
+      ${r.note ? `<div class="det-sect"><div class="det-sect-title">Ghi chú</div><div style="font-size:13px;color:var(--text2);background:var(--surface2);padding:10px 12px;border-radius:var(--radius);line-height:1.6">${esc(r.note)}</div></div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-green" onclick="closeDet();openForm('${r.id}')"><i class="ti ti-edit"></i> Chỉnh sửa</button>
+        <button class="btn btn-del" onclick="closeDet();delRoom('${r.id}')"><i class="ti ti-trash"></i> Xóa phòng</button>
+      </div>
+    </div>`;
+  document.getElementById('det-overlay').classList.add('open');
+};
+window.closeDet = function() { document.getElementById('det-overlay').classList.remove('open'); };
+window.slide = function(d) { sliderIdx = (sliderIdx + d + sliderImgs.length) % sliderImgs.length; goSlide(sliderIdx); };
+window.goSlide = function(i) {
+  sliderIdx = i;
+  document.getElementById('dslide-img').src = sliderImgs[i];
+  document.querySelectorAll('.sdot2').forEach((d, j) => d.className = 'sdot2' + (j === i ? ' on' : ''));
+};
+
+/* ── Helpers ── */
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+window.toast = function(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.innerHTML = `<i class="ti ti-${type === 'error' ? 'alert-circle' : type === 'success' ? 'check' : 'info-circle'}"></i><span>${msg}</span>`;
+  el.className = 'toast ' + type + ' in';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = 'toast ' + type, 3000);
+};
+
+/* ── Drag & drop ── */
+const dropZone = document.getElementById('img-drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--green)'; });
+dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; });
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.style.borderColor = '';
+  [...e.dataTransfer.files].filter(f => f.type.startsWith('image/')).forEach(f => {
+    const rd = new FileReader(); rd.onload = ev => { tmpImgs.push(ev.target.result); renderImgRow(); }; rd.readAsDataURL(f);
+  });
+});
+
+/* ── Close on backdrop ── */
+document.getElementById('det-overlay').addEventListener('click', function(e) { if (e.target === this) closeDet(); });
+document.getElementById('form-overlay').addEventListener('click', function(e) { if (e.target === this) closeForm(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeForm(); closeDet(); } });
+</script>
+</body>
+</html>
